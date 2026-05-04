@@ -11,6 +11,7 @@ import {
   getPerkStyleName,
   getQueueName,
   getSpellIcon,
+  getSpellInfo,
   getSpellName,
 } from '@/lib/assets'
 import { type OpggItemBuild, type OpggMode, type OpggPosition, type OpggRuneBuild } from '@/lib/opgg-api'
@@ -239,9 +240,10 @@ function SpellSection({ title, builds, limit }: { title: string; builds?: OpggIt
           <div className="sobp-row-main">
             <RankBadge rank={index + 1} />
             <div className="sobp-icons">
-              {build.ids.map((id) => (
-                <BuildIcon key={id} src={getSpellIcon(id)} title={getSpellName(id)} size={32} />
-              ))}
+              {build.ids.map((id) => {
+                const spell = getSpellInfo(id)
+                return <BuildIcon key={id} src={spell.iconPath || getSpellIcon(id)} title={spell.name || getSpellName(id)} description={spell.description} size={32} />
+              })}
             </div>
           </div>
           <StatBar value={build.pick_rate} maxRate={maxRate} />

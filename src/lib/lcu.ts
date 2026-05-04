@@ -991,7 +991,7 @@ class LCUManager {
   }
 
   /** 获取斗魂竞技场 / 海克斯模式强化符文数据 */
-  getAugments(): Promise<Array<{ id: number; nameTRA: string; augmentSmallIconPath: string; rarity: string; descTRA?: string; descriptionTRA?: string; tooltipTRA?: string }>> {
+  getAugments(): Promise<Array<{ id: number; nameTRA: string; augmentSmallIconPath: string; rarity: string; [key: string]: unknown }>> {
     return get('/lol-game-data/assets/v1/cherry-augments.json')
   }
 

@@ -1,23 +1,24 @@
 .sobp {
   position: relative;
+  display: flex;
+  flex-direction: column;
   max-height: calc(100vh - 72px);
-  overflow-x: hidden;
-  overflow-y: auto;
+  overflow: hidden;
   border: 1px solid rgb(200 170 110 / 55%);
   background: #010a13;
   box-shadow: 0 0 40px rgb(0 0 0 / 82%);
   color: #a09b8c;
 }
 
-.sobp::-webkit-scrollbar {
+.sobp-body::-webkit-scrollbar {
   width: 8px;
 }
 
-.sobp::-webkit-scrollbar-track {
+.sobp-body::-webkit-scrollbar-track {
   background: #010a13;
 }
 
-.sobp::-webkit-scrollbar-thumb {
+.sobp-body::-webkit-scrollbar-thumb {
   border: 1px solid #010a13;
   border-radius: 999px;
   background: rgb(200 170 110 / 45%);
@@ -36,7 +37,8 @@
 
 .sobp-titlebar {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -199,6 +201,10 @@
 .sobp-body {
   position: relative;
   z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
   padding: 22px 24px;
   background: #0a0f16;
 }

@@ -38,6 +38,14 @@ function normalizeDescription(raw: unknown): string {
     .trim()
 }
 
+function pickDescription(source: Record<string, unknown>, keys: string[]): string {
+  for (const key of keys) {
+    const description = normalizeDescription(source[key])
+    if (description) return description
+  }
+  return ''
+}
+
 // ==================== 映射表 ====================
 
 const itemMap = new Map<number, string>()
@@ -46,6 +54,7 @@ const itemDescriptionMap = new Map<number, string>()
 const itemPriceMap = new Map<number, number>()
 const spellMap = new Map<number, string>()
 const spellNameMap = new Map<number, string>()
+const spellDescriptionMap = new Map<number, string>()
 const perkMap = new Map<number, string>()
 const perkNameMap = new Map<number, string>()
 const perkDescriptionMap = new Map<number, string>()
@@ -187,7 +196,13 @@ async function tryInit(attempt: number) {
     if (item.id > 0 && item.iconPath) itemMap.set(item.id, normalizePath(item.iconPath))
     if (item.id > 0 && item.name) itemNameMap.set(item.id, item.name)
     if (item.id > 0) {
-      const description = normalizeDescription(item.description ?? item.shortDescription ?? item.longDescription)
+      const description = pickDescription(item as Record<string, unknown>, [
+        'description',
+        'shortDescription',
+        'longDescription',
+        'tooltip',
+        'tooltipText',
+      ])
       if (description) itemDescriptionMap.set(item.id, description)
       const price = item.priceTotal ?? item.price ?? 0
       if (Number.isFinite(price) && price > 0) itemPriceMap.set(item.id, price)
@@ -196,6 +211,16 @@ async function tryInit(attempt: number) {
   for (const spell of spells) {
     if (spell.id > 0 && spell.iconPath) spellMap.set(spell.id, normalizePath(spell.iconPath))
     if (spell.id > 0 && spell.name) spellNameMap.set(spell.id, spell.name)
+    if (spell.id > 0) {
+      const description = pickDescription(spell as unknown as Record<string, unknown>, [
+        'description',
+        'shortDescription',
+        'longDescription',
+        'tooltip',
+        'tooltipText',
+      ])
+      if (description) spellDescriptionMap.set(spell.id, description)
+    }
   }
   for (const queue of queues) {
     queueMap.set(queue.id, queue)
@@ -207,7 +232,13 @@ async function tryInit(attempt: number) {
     if (perk.id > 0 && perk.iconPath) perkMap.set(perk.id, normalizePath(perk.iconPath))
     if (perk.id > 0 && perk.name) perkNameMap.set(perk.id, perk.name)
     if (perk.id > 0) {
-      const description = normalizeDescription(perk.shortDesc ?? perk.longDesc ?? perk.description)
+      const description = pickDescription(perk as Record<string, unknown>, [
+        'shortDesc',
+        'longDesc',
+        'description',
+        'tooltip',
+        'tooltipText',
+      ])
       if (description) perkDescriptionMap.set(perk.id, description)
     }
   }
@@ -227,11 +258,25 @@ async function tryInit(attempt: number) {
   }
   for (const augment of augments) {
     if (augment.id > 0) {
+      const augmentRecord = augment as Record<string, unknown>
       augmentMap.set(augment.id, {
         name: augment.nameTRA || String(augment.id),
         iconPath: augment.augmentSmallIconPath ? normalizePath(augment.augmentSmallIconPath) : '',
         rarity: augment.rarity || '',
-        description: normalizeDescription(augment.descTRA ?? augment.descriptionTRA ?? augment.tooltipTRA),
+        description: pickDescription(augmentRecord, [
+          'descTRA',
+          'descriptionTRA',
+          'tooltipTRA',
+          'augmentDescriptionTRA',
+          'augmentDescTRA',
+          'description',
+          'tooltip',
+          'tooltipText',
+          'augmentDescription',
+          'augmentDesc',
+          'details',
+          'effect',
+        ]),
       })
     }
   }
@@ -299,6 +344,15 @@ export function getSpellIcon(id: number): string {
 /** 获取召唤师技能名称 */
 export function getSpellName(id: number): string {
   return spellNameMap.get(id) ?? String(id)
+}
+
+/** 获取召唤师技能完整信息（名称、图标、描述） */
+export function getSpellInfo(id: number): { name: string; iconPath: string; description: string } {
+  return {
+    name: spellNameMap.get(id) ?? String(id),
+    iconPath: spellMap.get(id) ?? '',
+    description: spellDescriptionMap.get(id) ?? '',
+  }
 }
 
 /** 获取单个符文图标路径（基石符文等） */
