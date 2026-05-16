@@ -190,6 +190,12 @@ export interface SonaConfig {
   autoTargetQueue: boolean
   /** 目标队列ID（参考 QueueId 枚举） */
   targetQueueId: number
+  /** 自动领取战利品（活动代币/通行证奖励等） */
+  autoClaimLoot: boolean
+  /** 一键卸下所有勋章/纹章 */
+  removeRegalia: boolean
+  /** 对局结束后自动关闭游戏进程 */
+  autoCloseGame: boolean
 }
 
 
@@ -268,6 +274,9 @@ const DEFAULT_CONFIG: SonaConfig = {
   fixLcuWindow: false,
   autoTargetQueue: false,
   targetQueueId: 430,
+  autoClaimLoot: false,
+  removeRegalia: false,
+  autoCloseGame: false,
 }
 
 

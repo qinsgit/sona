@@ -31,6 +31,9 @@ import { updateGameAnalysisPopup } from '@/lib/features/game-analysis-popup'
 import { updateAutoReturnToLobby } from '@/lib/features/auto-return-to-lobby'
 import { updateFixLcuWindow } from '@/lib/features/fix-lcu-window'
 import { updateAutoTargetQueue } from '@/lib/features/auto-target-queue'
+import { updateAutoClaimLoot } from '@/lib/features/auto-claim-loot'
+import { updateRemoveRegalia } from '@/lib/features/remove-regalia'
+import { updateAutoCloseGame } from '@/lib/features/auto-close-game'
 import { updateOpggBuildRecommendation } from '@/lib/features/opgg-build-recommendation'
 import { updateBeautifyCustomAvatar } from '@/lib/features/beautify-client/custom-avatar'
 import { initSocialSidebarGlass, updateSocialSidebarGlassConfig } from '@/lib/features/beautify-client/social-sidebar-glass'
@@ -888,6 +891,12 @@ export function initFeatures() {
   store.onChange('fixLcuWindow', updateFixLcuWindow)
   updateAutoTargetQueue(store.get('autoTargetQueue'))
   store.onChange('autoTargetQueue', updateAutoTargetQueue)
+  updateAutoClaimLoot(store.get('autoClaimLoot'))
+  store.onChange('autoClaimLoot', updateAutoClaimLoot)
+  updateRemoveRegalia(store.get('removeRegalia'))
+  store.onChange('removeRegalia', updateRemoveRegalia)
+  updateAutoCloseGame(store.get('autoCloseGame'))
+  store.onChange('autoCloseGame', updateAutoCloseGame)
   store.onChange('autoReturnMode', () => {
     // 模式变化时，如果功能已启用，重新注册以应用新模式
     if (store.get('autoReturnToLobby')) {
