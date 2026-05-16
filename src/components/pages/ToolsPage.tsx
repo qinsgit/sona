@@ -146,6 +146,9 @@ export function ToolsPage() {
   const [hideTFT, setHideTFT] = useState(store.get('hideTFT'))
   const [hideRightNavText, setHideRightNavText] = useState(store.get('hideRightNavText'))
   const [gameModeFilter, setGameModeFilter] = useState(store.get('gameModeFilter'))
+  const [fixLcuWindow, setFixLcuWindow] = useState(store.get('fixLcuWindow'))
+  const [autoTargetQueue, setAutoTargetQueue] = useState(store.get('autoTargetQueue'))
+  const [targetQueueId, setTargetQueueId] = useState(store.get('targetQueueId'))
   const [windowEffect, setWindowEffect] = useState(store.get('windowEffect'))
   const [champSelectAssist, setChampSelectAssist] = useState(store.get('champSelectAssist'))
   const [opggBuildRecommendation, setOpggBuildRecommendation] = useState(store.get('opggBuildRecommendation'))
@@ -221,6 +224,9 @@ export function ToolsPage() {
       store.onChange('benchNoCooldown', setBenchNoCooldown),
       store.onChange('hideTFT', setHideTFT),
       store.onChange('gameModeFilter', setGameModeFilter),
+      store.onChange('fixLcuWindow', setFixLcuWindow),
+      store.onChange('autoTargetQueue', setAutoTargetQueue),
+      store.onChange('targetQueueId', setTargetQueueId),
       store.onChange('windowEffect', setWindowEffect),
       store.onChange('champSelectAssist', setChampSelectAssist),
       store.onChange('opggBuildRecommendation', setOpggBuildRecommendation),
@@ -459,6 +465,31 @@ export function ToolsPage() {
             checked={sideIndicator}
             onChange={(v) => { setSideIndicator(v); store.set('sideIndicator', v) }}
           />
+        </SettingCard>
+        <SettingCard
+          title="点击PLAY自动目标对局"
+          description="点击首页 PLAY 按钮时，自动切换到指定的目标队列模式。"
+        >
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <div style={{ minWidth: 180 }}>
+              <SonaSelect
+                value={String(targetQueueId)}
+                onChange={(v) => { setTargetQueueId(Number(v)); store.set('targetQueueId', Number(v)) }}
+                options={[
+                  { value: '430', label: '召唤师峡谷 · 匹配' },
+                  { value: '420', label: '召唤师峡谷 · 单双排' },
+                  { value: '440', label: '召唤师峡谷 · 灵活排位' },
+                  { value: '450', label: '极地大乱斗' },
+                  { value: '1090', label: '云顶之弈 · 匹配' },
+                  { value: '1100', label: '云顶之弈 · 排位' },
+                ]}
+              />
+            </div>
+            <SonaSwitch
+              checked={autoTargetQueue}
+              onChange={(v) => { setAutoTargetQueue(v); store.set('autoTargetQueue', v) }}
+            />
+          </div>
         </SettingCard>
         <SettingCard
           title={t('tools.champSelectAssist.title')}
