@@ -45,6 +45,17 @@ jobs:
           if [ -d "dist/assets" ]; then
             cp -r dist/assets release/sona/
           fi
+          # 预留用户自定义资源目录，用户可把头像、背景等图片放到这里
+          mkdir -p release/sona/assets
+          cat > release/sona/assets/README.txt <<'EOF'
+          中文：
+          这里是 Sona 的自定义资源目录。
+          你可以把头像、背景、图标等图片放在这个 assets 文件夹里。
+
+          English:
+          This is Sona's custom assets folder.
+          You can put custom avatars, backgrounds, icons, and other images in this assets folder.
+          EOF
           # 打包
           cd release
           zip -r ../sona-${{ github.ref_name }}.zip sona/
