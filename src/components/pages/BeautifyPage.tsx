@@ -104,6 +104,22 @@ export function BeautifyPage() {
     setAssetMessage(`已从自定义头像移除：${assetPath}`)
   }
 
+  const applyCustomAvatarAssetPath = (assetPath: string) => {
+    if (!customAvatarAssetPaths.includes(assetPath)) return
+
+    if (customAvatarAssetPaths[0] === assetPath) {
+      setAssetMessage(`当前已应用头像：${assetPath}`)
+      return
+    }
+
+    const nextPaths = [
+      assetPath,
+      ...customAvatarAssetPaths.filter((path) => path !== assetPath),
+    ]
+    saveCustomAvatarAssetPaths(nextPaths)
+    setAssetMessage(`已应用自定义头像：${assetPath}`)
+  }
+
   const stopDragAutoScroll = () => {
     dragPointerYRef.current = null
     setIsAvatarDropActive(false)
@@ -204,20 +220,45 @@ export function BeautifyPage() {
           >
             {customAvatarAssetPaths.length > 0 ? (
               <div className="sona-avatar-grid">
-                {customAvatarAssetPaths.map((assetPath) => (
-                  <div className="sona-avatar-card" key={assetPath}>
-                    <button
-                      className="sona-asset-card-remove"
-                      type="button"
-                      onClick={() => removeCustomAvatarAssetPath(assetPath)}
-                      aria-label={`移除 ${assetPath}`}
+                {customAvatarAssetPaths.map((assetPath) => {
+                  const isApplied = customAvatarAssetPaths[0] === assetPath
+
+                  return (
+                    <div
+                      className={[
+                        'sona-avatar-card',
+                        isApplied ? 'sona-avatar-card--applied' : '',
+                      ].filter(Boolean).join(' ')}
+                      key={assetPath}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => applyCustomAvatarAssetPath(assetPath)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          applyCustomAvatarAssetPath(assetPath)
+                        }
+                      }}
+                      aria-label={`应用 ${assetPath} 为自定义头像`}
                     >
-                      ×
-                    </button>
-                    <img src={getAssetUrl(assetPath)} alt={assetPath} />
-                    <span>{assetPath}</span>
-                  </div>
-                ))}
+                      <button
+                        className="sona-asset-card-remove"
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          removeCustomAvatarAssetPath(assetPath)
+                        }}
+                        onKeyDown={(event) => event.stopPropagation()}
+                        aria-label={`移除 ${assetPath}`}
+                      >
+                        ×
+                      </button>
+                      <img src={getAssetUrl(assetPath)} alt={assetPath} />
+                      <span className="sona-avatar-card-name">{assetPath}</span>
+                      <span className="sona-avatar-card-action">点击应用</span>
+                    </div>
+                  )
+                })}
               </div>
             ) : (
               <div className="sona-avatar-dropzone-placeholder">

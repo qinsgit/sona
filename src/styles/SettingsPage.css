@@ -309,6 +309,7 @@
   background: rgba(30, 35, 40, 0.44);
   border: 1px solid rgba(200, 170, 110, 0.16);
   border-radius: 4px;
+  cursor: pointer;
   transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
 }
 
@@ -316,6 +317,16 @@
   transform: translateY(-2px);
   border-color: rgba(200, 170, 110, 0.34);
   background: rgba(30, 35, 40, 0.62);
+}
+
+.sona-avatar-card:focus-visible {
+  outline: 1px solid rgba(200, 170, 110, 0.8);
+  outline-offset: 2px;
+}
+
+.sona-avatar-card--applied {
+  border-color: rgba(200, 170, 110, 0.55);
+  box-shadow: 0 0 12px rgba(200, 170, 110, 0.12);
 }
 
 .sona-avatar-card:hover .sona-asset-card-remove {
@@ -332,7 +343,8 @@
   background: rgba(0, 0, 0, 0.24);
 }
 
-.sona-avatar-card span {
+.sona-avatar-card-name,
+.sona-avatar-card-action {
   display: block;
   margin-top: 8px;
   color: #a09b8c;
@@ -342,6 +354,20 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: center;
+}
+
+.sona-avatar-card-action {
+  display: none;
+  color: #c8aa6e;
+  font-weight: 600;
+}
+
+.sona-avatar-card:hover .sona-avatar-card-name {
+  display: none;
+}
+
+.sona-avatar-card:hover .sona-avatar-card-action {
+  display: block;
 }
 
 /* ---- 英雄联想下拉 ---- */

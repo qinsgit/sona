@@ -30,6 +30,7 @@ import { updateCustomBanner } from '@/lib/features/custom-banner'
 import { updateGameAnalysisPopup } from '@/lib/features/game-analysis-popup'
 import { updateAutoReturnToLobby } from '@/lib/features/auto-return-to-lobby'
 import { updateOpggBuildRecommendation } from '@/lib/features/opgg-build-recommendation'
+import { updateBeautifyCustomAvatar } from '@/lib/features/beautify-client/custom-avatar'
 import { preloadChampSelectTierBadgeData, updateChampSelectTierBadge } from '@/lib/features/champselect-tier-badge'
 import { setAvailabilityHijackEnabled, setHideTFTEnabled, setHideRightNavTextEnabled } from '@/lib/injections'
 import { calculateSonaPlayerStrengthScore, shouldSkipSonaStrengthGame, type SonaPlayerStrengthScore } from '@/lib/player-strength-score'
@@ -786,6 +787,9 @@ export function initFeatures() {
 
   updateCustomBanner(store.get('customBanner'))
   store.onChange('customBanner', updateCustomBanner)
+
+  updateBeautifyCustomAvatar()
+  store.onChange('customAvatarAssetPaths', updateBeautifyCustomAvatar)
 
   updateAutoHonor(store.get('autoHonor'))
   store.onChange('autoHonor', updateAutoHonor)
