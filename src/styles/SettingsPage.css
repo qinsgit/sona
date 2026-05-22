@@ -310,6 +310,33 @@
   opacity: 1;
 }
 
+.sona-wallpaper-card-edit {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  height: 22px;
+  padding: 0 8px;
+  border: 1px solid rgba(200, 170, 110, 0.12);
+  border-radius: 3px;
+  background: rgba(1, 10, 19, 0.78);
+  color: #a09b8c;
+  font-size: 11px;
+  line-height: 20px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.sona-wallpaper-card:hover .sona-wallpaper-card-edit {
+  opacity: 1;
+}
+
+.sona-wallpaper-card-edit:hover {
+  background: rgba(200, 170, 110, 0.18);
+  border-color: rgba(200, 170, 110, 0.45);
+  color: #f0e6d2;
+}
+
 .sona-wallpaper-card img {
   display: block;
   width: 100%;
@@ -345,6 +372,86 @@
 
 .sona-wallpaper-card:hover .sona-wallpaper-card-action {
   display: block;
+}
+
+.sona-wallpaper-adjust-modal {
+  display: flex;
+  flex-direction: column;
+  height: fit-content;
+  padding: 24px;
+}
+
+.sona-wallpaper-adjust-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+  min-width: 0;
+}
+
+.sona-wallpaper-adjust-header h3 {
+  margin: 0;
+  color: #f0e6d2;
+  font-size: 16px;
+  letter-spacing: 0.08em;
+}
+
+.sona-wallpaper-adjust-header span {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  color: #a09b8c;
+  font-size: 12px;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sona-wallpaper-adjust-content {
+  flex: 1;
+  min-height: 0;
+}
+
+.sona-wallpaper-adjust-frame {
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+  aspect-ratio: 16 / 9;
+  max-height: 390px;
+  margin: 0 auto;
+  background:
+    linear-gradient(135deg, rgba(200, 170, 110, 0.04), transparent 34%),
+    rgba(1, 10, 19, 0.62);
+  border: 1px dashed rgba(200, 170, 110, 0.48);
+  cursor: move;
+  user-select: none;
+}
+
+.sona-wallpaper-adjust-frame-guide {
+  position: absolute;
+  inset: 14px;
+  border: 1px dashed rgba(240, 230, 210, 0.5);
+  pointer-events: none;
+  box-shadow: 0 0 0 999px rgba(1, 10, 19, 0.12);
+}
+
+.sona-wallpaper-adjust-controls {
+  margin-top: 16px;
+}
+
+.sona-wallpaper-adjust-hint {
+  color: #785a28;
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.sona-wallpaper-adjust-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
 }
 
 .sona-avatar-dropzone {

@@ -32,7 +32,7 @@ import { updateAutoReturnToLobby } from '@/lib/features/auto-return-to-lobby'
 import { updateOpggBuildRecommendation } from '@/lib/features/opgg-build-recommendation'
 import { updateBeautifyCustomAvatar } from '@/lib/features/beautify-client/custom-avatar'
 import { initSocialSidebarGlass, updateSocialSidebarGlassConfig } from '@/lib/features/beautify-client/social-sidebar-glass'
-import { updateBeautifyHomepageBackground, updateBeautifyHomepageBackgroundGlassConfig } from '@/lib/features/beautify-client/homepage-background'
+import { updateBeautifyHomepageBackground, updateBeautifyHomepageBackgroundAdjustments, updateBeautifyHomepageBackgroundGlassConfig } from '@/lib/features/beautify-client/homepage-background'
 import { updateBeautifyWallpaperMode, updateBeautifyWallpaperModeGlassConfig } from '@/lib/features/beautify-client/wallpaper-mode'
 import { updateGameModeFilter } from '@/lib/features/game-mode-filter'
 import { preloadChampSelectTierBadgeData, updateChampSelectTierBadge } from '@/lib/features/champselect-tier-badge'
@@ -820,6 +820,8 @@ export function initFeatures() {
   syncHomepageBackgroundGlassConfig()
   store.onChange('beautifyHomepageBackgroundBlur', syncHomepageBackgroundGlassConfig)
   store.onChange('beautifyHomepageBackgroundOpacity', syncHomepageBackgroundGlassConfig)
+  updateBeautifyHomepageBackgroundAdjustments(store.get('beautifyHomepageBackgroundAdjustments'))
+  store.onChange('beautifyHomepageBackgroundAdjustments', updateBeautifyHomepageBackgroundAdjustments)
   updateBeautifyHomepageBackground(store.get('beautifyHomepageBackgroundAssetPath'))
   store.onChange('beautifyHomepageBackgroundAssetPath', updateBeautifyHomepageBackground)
 

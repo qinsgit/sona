@@ -96,6 +96,12 @@ export interface SonaConfig {
   beautifyHomepageBackgroundAssetPath: string | null
   /** 主页壁纸资源：从美化资源区复制引用的 assets 相对路径列表 */
   beautifyHomepageBackgroundAssetPaths: string[]
+  /** 主页壁纸取景参数：key 为 assets 相对路径 */
+  beautifyHomepageBackgroundAdjustments: Record<string, {
+    scale: number
+    offsetX: number
+    offsetY: number
+  }>
   /** 主页壁纸毛玻璃模糊强度（px） */
   beautifyHomepageBackgroundBlur: number
   /** 主页壁纸底色不透明度（0-100） */
@@ -206,6 +212,7 @@ const DEFAULT_CONFIG: SonaConfig = {
   beautifyWallpaperMode: false,
   beautifyHomepageBackgroundAssetPath: null,
   beautifyHomepageBackgroundAssetPaths: [],
+  beautifyHomepageBackgroundAdjustments: {},
   beautifyHomepageBackgroundBlur: 0,
   beautifyHomepageBackgroundOpacity: 0,
   beautifyGlassBlur: 14,

@@ -4,6 +4,12 @@ import type { BeautifyGlassConfig } from '@/lib/features/beautify-client/social-
 const VIEWPORT_ROOT_SELECTOR = 'section#rcp-fe-viewport-root'
 const HOMEPAGE_BACKGROUND_STYLE_ID = 'sona-homepage-background-style'
 
+export interface HomepageBackgroundAdjustment {
+  scale: number
+  offsetX: number
+  offsetY: number
+}
+
 function getAssetUrl(assetPath: string): string {
   return `//plugins/sona/assets/${assetPath.split('/').map(encodeURIComponent).join('/')}`
 }
@@ -13,6 +19,7 @@ function escapeCssUrl(value: string): string {
 }
 
 let currentAssetPath: string | null = null
+let adjustments: Record<string, HomepageBackgroundAdjustment> = {}
 let glassConfig: BeautifyGlassConfig = {
   blur: 0,
   opacity: 0,
@@ -28,6 +35,13 @@ function ensureHomepageBackgroundStyle() {
   const assetUrl = escapeCssUrl(getAssetUrl(currentAssetPath))
   const blur = clamp(glassConfig.blur, 0, 40)
   const opacity = clamp(glassConfig.opacity, 0, 100) / 100
+  const adjustment = adjustments[currentAssetPath] ?? { scale: 1, offsetX: 0, offsetY: 0 }
+  const scale = clamp(adjustment.scale, 1, 3)
+  const offsetX = clamp(adjustment.offsetX, -100, 100)
+  const offsetY = clamp(adjustment.offsetY, -100, 100)
+  const backgroundSize = scale === 1 ? 'cover' : `${Number((scale * 100).toFixed(2))}% auto`
+  const backgroundPositionX = `calc(50% + ${Number(offsetX.toFixed(2))}%)`
+  const backgroundPositionY = `calc(50% + ${Number(offsetY.toFixed(2))}%)`
   let style = document.getElementById(HOMEPAGE_BACKGROUND_STYLE_ID)
   if (!style) {
     style = document.createElement('style')
@@ -39,8 +53,8 @@ function ensureHomepageBackgroundStyle() {
     ${VIEWPORT_ROOT_SELECTOR} {
       position: relative !important;
       background-image: url("${assetUrl}") !important;
-      background-size: cover !important;
-      background-position: center center !important;
+      background-size: ${backgroundSize} !important;
+      background-position: ${backgroundPositionX} ${backgroundPositionY} !important;
       background-repeat: no-repeat !important;
     }
 
@@ -85,6 +99,13 @@ export function updateBeautifyHomepageBackground(assetPath: string | null) {
 
 export function updateBeautifyHomepageBackgroundGlassConfig(config: BeautifyGlassConfig) {
   glassConfig = config
+  if (registered) {
+    ensureHomepageBackgroundStyle()
+  }
+}
+
+export function updateBeautifyHomepageBackgroundAdjustments(nextAdjustments: Record<string, HomepageBackgroundAdjustment>) {
+  adjustments = nextAdjustments
   if (registered) {
     ensureHomepageBackgroundStyle()
   }

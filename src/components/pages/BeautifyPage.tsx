@@ -1,4 +1,5 @@
-import { useRef, useState, type DragEvent } from 'react'
+import { useRef, useState, type DragEvent, type PointerEvent, type WheelEvent } from 'react'
+import { Modal } from '@/components/ui/Modal'
 import { SettingCard, SettingGroup } from '@/components/ui/SettingCard'
 import { SonaButton } from '@/components/ui/SonaButton'
 import { SonaInput } from '@/components/ui/SonaInput'
@@ -11,6 +12,23 @@ const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg', 'b
 const ASSET_DRAG_MIME = 'application/x-sona-asset-path'
 const DRAG_SCROLL_EDGE_SIZE = 76
 const DRAG_SCROLL_MAX_SPEED = 20
+const DEFAULT_WALLPAPER_ADJUSTMENT = { scale: 1, offsetX: 0, offsetY: 0 }
+const WALLPAPER_SCALE_MIN = 1
+const WALLPAPER_SCALE_MAX = 3
+const WALLPAPER_WHEEL_SCALE_STEP = 0.08
+
+interface WallpaperAdjustment {
+  scale: number
+  offsetX: number
+  offsetY: number
+}
+
+interface WallpaperDragStart {
+  clientX: number
+  clientY: number
+  offsetX: number
+  offsetY: number
+}
 
 function isImageFile(fileName: string): boolean {
   const ext = fileName.split('.').pop()?.toLowerCase()
@@ -30,8 +48,22 @@ function getAssetUrl(assetPath: string): string {
   return `//plugins/sona/assets/${assetPath.split('/').map(encodeURIComponent).join('/')}`
 }
 
+function getWallpaperBackgroundSize(adjustment: WallpaperAdjustment): string {
+  return adjustment.scale === 1 ? 'cover' : `${Number((adjustment.scale * 100).toFixed(2))}% auto`
+}
+
+function getWallpaperBackgroundPosition(adjustment: WallpaperAdjustment): string {
+  return `calc(50% + ${Number(adjustment.offsetX.toFixed(2))}%) calc(50% + ${Number(adjustment.offsetY.toFixed(2))}%)`
+}
+
+function clampNumber(value: number, min: number, max: number): number {
+  return Math.min(Math.max(value, min), max)
+}
+
 export function BeautifyPage() {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const wallpaperFrameRef = useRef<HTMLDivElement>(null)
+  const wallpaperDragStartRef = useRef<WallpaperDragStart | null>(null)
   const dragScrollFrameRef = useRef<number | null>(null)
   const dragPointerYRef = useRef<number | null>(null)
   const [assetPathInput, setAssetPathInput] = useState('')
@@ -42,6 +74,7 @@ export function BeautifyPage() {
     const activePath = store.get('beautifyHomepageBackgroundAssetPath')
     return activePath && !paths.includes(activePath) ? [activePath, ...paths] : paths
   })
+  const [homepageBackgroundAdjustments, setHomepageBackgroundAdjustments] = useState(() => store.get('beautifyHomepageBackgroundAdjustments'))
   const [homepageBackgroundBlur, setHomepageBackgroundBlur] = useState(() => store.get('beautifyHomepageBackgroundBlur'))
   const [homepageBackgroundOpacity, setHomepageBackgroundOpacity] = useState(() => store.get('beautifyHomepageBackgroundOpacity'))
   const [glassBlur, setGlassBlur] = useState(() => store.get('beautifyGlassBlur'))
@@ -49,6 +82,8 @@ export function BeautifyPage() {
   const [assetPaths, setAssetPaths] = useState(() => store.get('beautifyAssetPaths'))
   const [customAvatarAssetPaths, setCustomAvatarAssetPaths] = useState(() => store.get('customAvatarAssetPaths'))
   const [assetMessage, setAssetMessage] = useState('请输入 assets 目录下的相对路径，例： 你在 assets中放了一张 avatar.png 图片，那么请输入 avatar.png。\n如果你在assets中创建了一个文件夹并命名为icons，在其中放了一张 avatar.png 那么请输入 icons/avatar.png。')
+  const [editingWallpaperAssetPath, setEditingWallpaperAssetPath] = useState<string | null>(null)
+  const [draftWallpaperAdjustment, setDraftWallpaperAdjustment] = useState<WallpaperAdjustment>(DEFAULT_WALLPAPER_ADJUSTMENT)
   const [isHomepageBackgroundDropActive, setIsHomepageBackgroundDropActive] = useState(false)
   const [isAvatarDropActive, setIsAvatarDropActive] = useState(false)
 
@@ -70,6 +105,11 @@ export function BeautifyPage() {
   const saveHomepageBackgroundAssetPaths = (paths: string[]) => {
     setHomepageBackgroundAssetPaths(paths)
     store.set('beautifyHomepageBackgroundAssetPaths', paths)
+  }
+
+  const saveHomepageBackgroundAdjustments = (adjustments: Record<string, WallpaperAdjustment>) => {
+    setHomepageBackgroundAdjustments(adjustments)
+    store.set('beautifyHomepageBackgroundAdjustments', adjustments)
   }
 
   const toggleBeautifyWallpaperMode = (enabled: boolean) => {
@@ -130,8 +170,11 @@ export function BeautifyPage() {
   const removeAssetPath = (assetPath: string) => {
     const nextPaths = assetPaths.filter((path) => path !== assetPath)
     const nextHomepageBackgroundAssetPaths = homepageBackgroundAssetPaths.filter((path) => path !== assetPath)
+    const nextHomepageBackgroundAdjustments = { ...homepageBackgroundAdjustments }
+    delete nextHomepageBackgroundAdjustments[assetPath]
     saveAssetPaths(nextPaths)
     saveHomepageBackgroundAssetPaths(nextHomepageBackgroundAssetPaths)
+    saveHomepageBackgroundAdjustments(nextHomepageBackgroundAdjustments)
     saveCustomAvatarAssetPaths(customAvatarAssetPaths.filter((path) => path !== assetPath))
     if (homepageBackgroundAssetPath === assetPath) {
       saveHomepageBackgroundAssetPath(nextHomepageBackgroundAssetPaths[0] ?? null)
@@ -163,11 +206,84 @@ export function BeautifyPage() {
 
   const removeHomepageBackgroundAssetPath = (assetPath: string) => {
     const nextPaths = homepageBackgroundAssetPaths.filter((path) => path !== assetPath)
+    const nextAdjustments = { ...homepageBackgroundAdjustments }
+    delete nextAdjustments[assetPath]
     saveHomepageBackgroundAssetPaths(nextPaths)
+    saveHomepageBackgroundAdjustments(nextAdjustments)
     if (homepageBackgroundAssetPath === assetPath) {
       saveHomepageBackgroundAssetPath(nextPaths[0] ?? null)
     }
     setAssetMessage(`已从主页壁纸移除：${assetPath}`)
+  }
+
+  const openHomepageBackgroundAdjustModal = (assetPath: string) => {
+    setEditingWallpaperAssetPath(assetPath)
+    setDraftWallpaperAdjustment(homepageBackgroundAdjustments[assetPath] ?? DEFAULT_WALLPAPER_ADJUSTMENT)
+    wallpaperDragStartRef.current = null
+  }
+
+  const closeHomepageBackgroundAdjustModal = () => {
+    setEditingWallpaperAssetPath(null)
+    wallpaperDragStartRef.current = null
+  }
+
+  const saveHomepageBackgroundAdjustment = () => {
+    if (!editingWallpaperAssetPath) return
+
+    const nextAdjustments = {
+      ...homepageBackgroundAdjustments,
+      [editingWallpaperAssetPath]: draftWallpaperAdjustment,
+    }
+    saveHomepageBackgroundAdjustments(nextAdjustments)
+    setAssetMessage(`已保存主页壁纸取景：${editingWallpaperAssetPath}`)
+    closeHomepageBackgroundAdjustModal()
+  }
+
+  const resetHomepageBackgroundAdjustment = () => {
+    setDraftWallpaperAdjustment(DEFAULT_WALLPAPER_ADJUSTMENT)
+  }
+
+  const handleWallpaperFramePointerDown = (event: PointerEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    event.currentTarget.setPointerCapture(event.pointerId)
+    wallpaperDragStartRef.current = {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      offsetX: draftWallpaperAdjustment.offsetX,
+      offsetY: draftWallpaperAdjustment.offsetY,
+    }
+  }
+
+  const handleWallpaperFramePointerMove = (event: PointerEvent<HTMLDivElement>) => {
+    const dragStart = wallpaperDragStartRef.current
+    const frame = wallpaperFrameRef.current
+    if (!dragStart || !frame) return
+
+    const rect = frame.getBoundingClientRect()
+    const offsetX = dragStart.offsetX - ((event.clientX - dragStart.clientX) / rect.width) * 100
+    const offsetY = dragStart.offsetY - ((event.clientY - dragStart.clientY) / rect.height) * 100
+
+    setDraftWallpaperAdjustment((current) => ({
+      ...current,
+      offsetX: clampNumber(offsetX, -100, 100),
+      offsetY: clampNumber(offsetY, -100, 100),
+    }))
+  }
+
+  const handleWallpaperFramePointerEnd = (event: PointerEvent<HTMLDivElement>) => {
+    wallpaperDragStartRef.current = null
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId)
+    }
+  }
+
+  const handleWallpaperFrameWheel = (event: WheelEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    const direction = event.deltaY < 0 ? 1 : -1
+    setDraftWallpaperAdjustment((current) => ({
+      ...current,
+      scale: Number(clampNumber(current.scale + direction * WALLPAPER_WHEEL_SCALE_STEP, WALLPAPER_SCALE_MIN, WALLPAPER_SCALE_MAX).toFixed(2)),
+    }))
   }
 
   const addCustomAvatarAssetPath = (assetPath: string) => {
@@ -396,6 +512,18 @@ export function BeautifyPage() {
                         >
                           ×
                         </button>
+                        <button
+                          className="sona-wallpaper-card-edit"
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            openHomepageBackgroundAdjustModal(assetPath)
+                          }}
+                          onKeyDown={(event) => event.stopPropagation()}
+                          aria-label={`调整主页壁纸 ${assetPath}`}
+                        >
+                          调整
+                        </button>
                         <img src={getAssetUrl(assetPath)} alt={assetPath} />
                         <span className="sona-wallpaper-card-name">{assetPath}</span>
                         <span className="sona-wallpaper-card-action">点击应用</span>
@@ -556,6 +684,60 @@ export function BeautifyPage() {
           </div>
         </SettingCard>
       </SettingGroup>
+
+      <Modal
+        open={Boolean(editingWallpaperAssetPath)}
+        onClose={closeHomepageBackgroundAdjustModal}
+        width={900}
+        height={560}
+      >
+        <div className="sona-wallpaper-adjust-modal">
+          <div className="sona-wallpaper-adjust-header">
+            <h3>调整主页壁纸取景</h3>
+            <span>{editingWallpaperAssetPath}</span>
+          </div>
+
+          {editingWallpaperAssetPath && (
+            <div className="sona-wallpaper-adjust-content">
+              <div
+                className="sona-wallpaper-adjust-frame"
+                ref={wallpaperFrameRef}
+                onPointerDown={handleWallpaperFramePointerDown}
+                onPointerMove={handleWallpaperFramePointerMove}
+                onPointerUp={handleWallpaperFramePointerEnd}
+                onPointerCancel={handleWallpaperFramePointerEnd}
+                onWheel={handleWallpaperFrameWheel}
+                style={{
+                  backgroundImage: `url("${getAssetUrl(editingWallpaperAssetPath)}")`,
+                  backgroundSize: getWallpaperBackgroundSize(draftWallpaperAdjustment),
+                  backgroundPosition: getWallpaperBackgroundPosition(draftWallpaperAdjustment),
+                  backgroundRepeat: 'no-repeat',
+                }}
+              >
+                <div className="sona-wallpaper-adjust-frame-guide" />
+              </div>
+
+              <div className="sona-wallpaper-adjust-controls">
+                <div className="sona-wallpaper-adjust-hint">
+                  按住拖动调整位置，滚动鼠标滚轮缩放图片
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="sona-wallpaper-adjust-actions">
+            <SonaButton onClick={resetHomepageBackgroundAdjustment}>
+              重置
+            </SonaButton>
+            <SonaButton onClick={closeHomepageBackgroundAdjustModal}>
+              取消
+            </SonaButton>
+            <SonaButton onClick={saveHomepageBackgroundAdjustment}>
+              保存取景
+            </SonaButton>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
