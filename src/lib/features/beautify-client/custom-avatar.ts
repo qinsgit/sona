@@ -31,8 +31,6 @@ let friendPuuidMapPromise: Promise<void> | null = null
 let friendPuuidMapUpdatedAt = 0
 let friendAvatarUnsub: (() => void) | null = null
 let friendAvatarRefreshTimer: number | null = null
-let lastFriendAvatarDebugAt = 0
-let lastFriendAvatarDebugSignature = ''
 const friendImageObservers = new Map<HTMLImageElement, MutationObserver>()
 const regaliaElementObservers = new Map<Element, MutationObserver>()
 const regaliaPartyHostObservers = new Map<Element, MutationObserver>()
@@ -278,46 +276,6 @@ function getAvatarUrlForPuuid(puuid: string): string | null | undefined {
   return undefined
 }
 
-function logFriendAvatarApplyDebug(stats: {
-  scanned: number
-  patched: number
-  alreadyPatched: number
-  restored: number
-  missingPuuid: number
-  missingAvatar: number
-  pendingAvatar: number
-  patchedNames: string[]
-}) {
-  const signature = [
-    stats.scanned,
-    stats.patched,
-    stats.alreadyPatched,
-    stats.restored,
-    stats.missingPuuid,
-    stats.missingAvatar,
-    stats.pendingAvatar,
-    stats.patchedNames.join(','),
-  ].join(':')
-  const now = Date.now()
-  if (signature === lastFriendAvatarDebugSignature && now - lastFriendAvatarDebugAt < 2000) return
-
-  lastFriendAvatarDebugSignature = signature
-  lastFriendAvatarDebugAt = now
-  logger.info(
-    '[CustomAvatar] 好友栏头像扫描：扫描 %d 个，成功替换 %d 个，已是目标头像 %d 个，恢复 %d 个，缺少 PUUID %d 个，无远程头像 %d 个，等待缓存 %d 个',
-    stats.scanned,
-    stats.patched,
-    stats.alreadyPatched,
-    stats.restored,
-    stats.missingPuuid,
-    stats.missingAvatar,
-    stats.pendingAvatar,
-  )
-  if (stats.patchedNames.length > 0) {
-    logger.info('[CustomAvatar] 好友栏头像成功替换：%s', stats.patchedNames.join('、'))
-  }
-}
-
 function getOwnPuuid(): string {
   if (ownPuuidCache) return ownPuuidCache
 
@@ -552,16 +510,6 @@ function queryRegaliaAvatarElements(): RegaliaAvatarCandidate[] {
 
 function applyCustomAvatar(): boolean {
   let changed = false
-  const friendAvatarStats = {
-    scanned: 0,
-    patched: 0,
-    alreadyPatched: 0,
-    restored: 0,
-    missingPuuid: 0,
-    missingAvatar: 0,
-    pendingAvatar: 0,
-    patchedNames: [] as string[],
-  }
 
   const ownPuuid = getOwnPuuid()
   const ownAvatarUrl = getCurrentAvatarUrl()
@@ -571,35 +519,18 @@ function applyCustomAvatar(): boolean {
     })
   }
 
-  queryFriendAvatarCandidates().forEach(({ image, memberName, puuid }) => {
-    friendAvatarStats.scanned += 1
-    if (!puuid) {
-      friendAvatarStats.missingPuuid += 1
-      return
-    }
+  queryFriendAvatarCandidates().forEach(({ image, puuid }) => {
+    if (!puuid) return
 
     const avatarUrl = getAvatarUrlForPuuid(puuid)
     if (avatarUrl) {
       const patched = patchFriendAvatar(image, avatarUrl, puuid)
-      if (patched) {
-        friendAvatarStats.patched += 1
-        if (memberName) friendAvatarStats.patchedNames.push(memberName)
-      } else {
-        friendAvatarStats.alreadyPatched += 1
-      }
       changed = patched || changed
     } else if (avatarUrl === null && patchedFriendImagePuuid.get(image) === puuid) {
       const restored = restoreFriendAvatar(image)
-      if (restored) friendAvatarStats.restored += 1
       changed = restored || changed
-    } else if (avatarUrl === null) {
-      friendAvatarStats.missingAvatar += 1
-    } else {
-      friendAvatarStats.pendingAvatar += 1
     }
   })
-
-  logFriendAvatarApplyDebug(friendAvatarStats)
 
   queryRegaliaAvatarElements().forEach(({ element, puuid }) => {
     const avatarUrl = getAvatarUrlForPuuid(puuid)
