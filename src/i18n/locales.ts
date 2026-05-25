@@ -412,7 +412,7 @@ export const zhCN = {
   'debug.placeholder.queueId': '输入 Queue ID (如 450=大乱斗)',
   'debug.placeholder.skinId': '输入皮肤 ID (如 777058)',
   'notification.avatarSync.title': 'Sona 头像同步成功',
-  'notification.avatarSync.details': '你的自定义头像已经同步到云端，好友重启客户端后即可看到。',
+  'notification.avatarSync.details': '自定义头像同步完成',
 } as const
 
 export const enUS: Record<keyof typeof zhCN, string> = {
@@ -829,7 +829,7 @@ export const enUS: Record<keyof typeof zhCN, string> = {
   'debug.placeholder.queueId': 'Queue ID (e.g. 450=ARAM)',
   'debug.placeholder.skinId': 'Skin ID (e.g. 777058)',
   'notification.avatarSync.title': 'Sona avatar synced',
-  'notification.avatarSync.details': 'Your avatar was uploaded. Friends will see it after their next client refresh.',
+  'notification.avatarSync.details': 'Your avatar was synced successfully',
 }
 
 export const locales = {
