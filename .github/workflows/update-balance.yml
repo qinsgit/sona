@@ -35,11 +35,6 @@ jobs:
           npm run update-balance
           echo "exit_code=$?" >> $GITHUB_OUTPUT
 
-      - name: Stop if no update
-        if: steps.update.outputs.exit_code != '0'
-        run: |
-          echo "✓ 数据无变化，结束流程"
-          exit 0
 
       - name: Bump patch version
         if: steps.update.outputs.exit_code == '0'
