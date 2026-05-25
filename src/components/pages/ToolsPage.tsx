@@ -146,7 +146,6 @@ export function ToolsPage() {
   const [hideTFT, setHideTFT] = useState(store.get('hideTFT'))
   const [hideRightNavText, setHideRightNavText] = useState(store.get('hideRightNavText'))
   const [gameModeFilter, setGameModeFilter] = useState(store.get('gameModeFilter'))
-  const [fixLcuWindow, setFixLcuWindow] = useState(store.get('fixLcuWindow'))
   const [autoTargetQueue, setAutoTargetQueue] = useState(store.get('autoTargetQueue'))
   const [targetQueueId, setTargetQueueId] = useState(store.get('targetQueueId'))
   const [autoClaimLoot, setAutoClaimLoot] = useState(store.get('autoClaimLoot'))
@@ -227,7 +226,6 @@ export function ToolsPage() {
       store.onChange('benchNoCooldown', setBenchNoCooldown),
       store.onChange('hideTFT', setHideTFT),
       store.onChange('gameModeFilter', setGameModeFilter),
-      store.onChange('fixLcuWindow', setFixLcuWindow),
       store.onChange('autoTargetQueue', setAutoTargetQueue),
       store.onChange('targetQueueId', setTargetQueueId),
       store.onChange('autoClaimLoot', setAutoClaimLoot),

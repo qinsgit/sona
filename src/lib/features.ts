@@ -886,8 +886,7 @@ export function initFeatures() {
 
   updateAutoReturnToLobby(store.get('autoReturnToLobby'))
   store.onChange('autoReturnToLobby', updateAutoReturnToLobby)
-  updateFixLcuWindow(store.get('fixLcuWindow'))
-  store.onChange('fixLcuWindow', updateFixLcuWindow)
+
   updateAutoTargetQueue(store.get('autoTargetQueue'))
   store.onChange('autoTargetQueue', updateAutoTargetQueue)
   updateAutoClaimLoot(store.get('autoClaimLoot'))
